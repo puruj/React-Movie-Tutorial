@@ -1,15 +1,29 @@
 import MovieCard from "../components/MovieCard";
-import {useState} from "react";
+import {useState, useEffect} from "react";
+import { searchMovies, getPopularMovies } from "../services/api";
 import '../css/Home.css'
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [movies, setMovies] = useState([]);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const movies = [
-        {id: 1, title: 'The Godfather', release_date: 'March 24, 1972', url: 'https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg'},
-        {id: 2, title: 'The Shawshank Redemption', release_date: 'September 23, 1994', url: 'https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg'},
-        {id: 3, title: 'The Dark Knight', release_date: 'July 18, 2008', url: 'https://upload.wikimedia.org/wikipedia/en/8/8a/Dark_Knight.jpg'}
-    ]
+
+    useEffect(() => {
+        const loadPopularMovies = async () => {
+            try {
+                const popularMovies = await getPopularMovies();
+                setMovies(popularMovies);
+            }
+            catch(error) {
+                console.error(error);
+                setError("An error occurred while loading popular movies. Please try again later.");
+            }
+            setLoading(false);
+        }
+        loadPopularMovies();
+    }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -29,11 +43,17 @@ function Home() {
                 <button type="submit" className="search-btn">Search</button>
             </form>
 
-            <div className="movies-grid">
-                {movies.map(movie => (
-                    <MovieCard key={movie.id} movie={movie} />
-                ))}
-            </div>
+        {error && <div className="error-message">{error}</div>}
+
+            {loading ? (
+                <div className="loading">Loading...</div>
+            ) : (
+                <div className="movies-grid">
+                    {movies.map(movie => (
+                        <MovieCard key={movie.id} movie={movie} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
