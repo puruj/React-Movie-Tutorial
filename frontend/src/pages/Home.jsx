@@ -25,9 +25,29 @@ function Home() {
         loadPopularMovies();
     }, []);
 
-    const handleSearch = (e) => {
+    const handleSearch = async (e) => {
         e.preventDefault();
-        alert(`Searching for ${searchQuery}`);
+        
+        if (!searchQuery.trim()) {
+            return;
+        }
+        if (loading) {
+            return;
+        }
+
+        setLoading(true);
+        try{
+            const results = await searchMovies(searchQuery);
+            setMovies(results);
+            setError(null);
+        }
+        catch(error) {
+            console.error(error);
+            setError("An error occurred while searching for movies. Please try again later.");
+        }
+        finally {
+            setLoading(false);
+        }
     }
 
     return ( 
